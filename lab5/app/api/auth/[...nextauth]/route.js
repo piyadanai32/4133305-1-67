@@ -2,6 +2,9 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+
+import GitHubProvider from "next-auth/providers/github";
+
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
@@ -20,16 +23,23 @@ export const authOptions = {
           where: { email: credentials.email },
         });
 
-        if (user && (await bcrypt.compare(credentials.password, user.password)))
+        if (
+          user &&
+          (await bcrypt.compare(credentials.password, user.password))
+        ) {
           return {
             id: user.id,
             name: user.name,
             email: user.email,
           };
-        else {
-          throw new Error("Invalid user or password");
+        } else {
+          throw new Error("Invalid email or password");
         }
       },
+    }),
+    GitHubProvider({
+      clientId: process.env.GITHUB_ID,
+      clientSecret: process.env.GITHUB_SECRET,
     }),
   ],
   adapter: PrismaAdapter(prisma),
@@ -41,6 +51,7 @@ export const authOptions = {
       if (user) {
         token.id = user.id;
       }
+      return token;
     },
     session: async ({ session, token }) => {
       if (session.user) {
