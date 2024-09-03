@@ -10,7 +10,7 @@ const App: React.FC = () => {
 
       <Basic initVal="1" />
 
-      <Hook initHook="5" />
+      <Hook initHook="1" />
     </>
   );
 };
